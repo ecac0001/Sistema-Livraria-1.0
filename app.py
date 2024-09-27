@@ -1,6 +1,6 @@
 from flask import render_template, redirect, url_for, request, session, flash
 from config import app, db
-from models import Cliente, Livro
+from models import Cliente, Livro, Emprestimo
 from datetime import datetime
 
 # Simulação de dados de login (usuário e senha)
@@ -183,6 +183,51 @@ def configuracao():
     if 'username' not in session:
         return redirect(url_for('login'))
     return render_template('configuracao.html')
+
+
+#Rota de empréstimos
+
+
+@app.route('/emprestimos', methods=['GET', 'POST'])
+
+def emprestimos():
+    print("Acessou a rota de empréstimos")
+    if request.method == 'POST':
+        cliente_id = request.form['cliente_id']
+        livro_id = request.form['livro_id']
+        data_emprestimo = datetime.strptime(request.form['data_emprestimo'], '%Y-%m-%d')
+
+        novo_emprestimo = Emprestimo(cliente_id=cliente_id, livro_id=livro_id, data_emprestimo=data_emprestimo)
+        db.session.add(novo_emprestimo)
+        db.session.commit()
+        flash('Empréstimo cadastrado com sucesso!')
+
+        # Corrigido: precisa ter a lista atualizada
+        emprestimos = Emprestimo.query.all()
+        clientes = Cliente.query.all()
+        livros = Livro.query.all()
+        return render_template('emprestimos.html', emprestimos=emprestimos, clientes=clientes, livros=livros)
+
+    emprestimos = Emprestimo.query.all()
+    clientes = Cliente.query.all()
+    livros = Livro.query.all()
+    return render_template('emprestimos.html', emprestimos=emprestimos, clientes=clientes, livros=livros)
+
+
+
+@app.route('/deletar_emprestimo/<int:id>', methods=['POST'])
+def deletar_emprestimo(id):
+    emprestimo = Emprestimo.query.get_or_404(id)
+
+    try:
+        db.session.delete(emprestimo)
+        db.session.commit()
+        flash('Empréstimo deletado com sucesso!')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erro ao deletar empréstimo: {str(e)}')
+    
+    return redirect(url_for('emprestimos'))
 
 if __name__ == '__main__':
     with app.app_context():
