@@ -1,0 +1,94 @@
+{% extends "index.html" %}
+
+{% block content %}
+    <div class="container-fluid d-flex flex-column align-items-center">
+        <h1 class="text-center my-4">Cadastro de Livros</h1>
+
+        <button id="toggleFormButton" class="btn btn-primary toggle-btn mb-4" onclick="toggleForm()">Novo Cadastro</button>
+
+        <div id="formContainer" class="form-box mb-4" style="display: none; width: 100%;">
+            <div class="card p-4 mx-auto" style="max-width: 600px;">
+                <!-- Linha de depuração -->
+                <p>Ação do formulário: {{ url_for('livros') }}</p> <!-- Imprime a URL gerada -->
+
+                <form method="POST" action="{{ url_for('livros') }}">
+                    <div class="mb-3">
+                        <label for="titulo" class="form-label">Título</label>
+                        <input type="text" class="form-control" id="titulo" name="titulo" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="autor" class="form-label">Autor</label>
+                        <input type="text" class="form-control" id="autor" name="autor" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="data_publicacao" class="form-label">Data de Publicação</label>
+                        <input type="date" class="form-control" id="data_publicacao" name="data_publicacao" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="genero" class="form-label">Gênero</label>
+                        <input type="text" class="form-control" id="genero" name="genero" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="isbn" class="form-label">ISBN</label>
+                        <input type="text" class="form-control" id="isbn" name="isbn" required>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Cadastrar Livro</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="table-box mt-4 w-100">
+            <h2>Lista de Livros Cadastrados</h2>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Título</th>
+                        <th>Autor</th>
+                        <th>Data de Publicação</th>
+                        <th>Gênero</th>
+                        <th>ISBN</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for livro in livros %}
+                    <tr>
+                        <td>{{ livro.id }}</td>
+                        <td>{{ livro.titulo }}</td>
+                        <td>{{ livro.autor }}</td>
+                        <td>{{ livro.data_publicacao }}</td>
+                        <td>{{ livro.genero }}</td>
+                        <td>{{ livro.isbn }}</td>
+                        <td>
+                            <a href="{{ url_for('editar_livro', id=livro.id) }}" class="btn btn-warning btn-sm">Editar</a>
+                            <form action="{{ url_for('deletar_livro', id=livro.id) }}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center">Nenhum livro cadastrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function toggleForm() {
+            const formContainer = document.getElementById('formContainer');
+            const toggleButton = document.getElementById('toggleFormButton');
+
+            if (formContainer.style.display === 'none') {
+                formContainer.style.display = 'block';
+                toggleButton.textContent = 'Cancelar Cadastro';
+            } else {
+                formContainer.style.display = 'none';
+                toggleButton.textContent = 'Novo Cadastro';
+            }
+        }
+    </script>
+{% endblock %}

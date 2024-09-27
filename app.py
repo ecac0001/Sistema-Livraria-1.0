@@ -1,6 +1,7 @@
 from flask import render_template, redirect, url_for, request, session, flash
 from config import app, db
-from models import Cliente
+from models import Cliente, Livro
+from datetime import datetime
 
 # Simulação de dados de login (usuário e senha)
 USERS = {
@@ -78,6 +79,8 @@ def editar_cliente(id):
         cliente.cidade = request.form['cidade']
         cliente.profissao = request.form['profissao']
         cliente.escolaridade = request.form['escolaridade']
+        # Atualize a data de cadastro, se necessário
+        cliente.data_cadastro = datetime.now().date()
 
         try:
             db.session.commit()
@@ -89,6 +92,7 @@ def editar_cliente(id):
             return redirect(url_for('clientes'))
 
     return render_template('editar_cliente.html', cliente=cliente)
+
 
 # Rota para excluir um cliente
 @app.route('/deletar_cliente/<int:id>', methods=['POST'])
@@ -103,11 +107,74 @@ def deletar_cliente(id):
         flash(f'Erro ao excluir cliente: {str(e)}')
     return redirect(url_for('clientes'))
 
-@app.route('/livros')
+@app.route('/livros', methods=['GET', 'POST'])
 def livros():
     if 'username' not in session:
         return redirect(url_for('login'))
-    return render_template('livros.html')
+    
+    if request.method == 'POST':
+        titulo = request.form['titulo']
+        autor = request.form['autor']
+        data_publicacao = request.form['data_publicacao']
+        genero = request.form['genero']
+        isbn = request.form['isbn']
+
+        novo_livro = Livro(
+            titulo=titulo,
+            autor=autor,
+            data_publicacao=datetime.strptime(data_publicacao, '%Y-%m-%d').date(),  # Converte string para data
+            genero=genero,
+            isbn=isbn
+        )
+
+        try:
+            db.session.add(novo_livro)
+            db.session.commit()
+            flash('Livro cadastrado com sucesso!')
+            return redirect(url_for('livros'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao cadastrar livro: {str(e)}')
+            return redirect(url_for('livros'))
+
+    livros = Livro.query.all()
+    return render_template('livros.html', livros=livros)
+
+@app.route('/editar_livro/<int:id>', methods=['GET', 'POST'])
+def editar_livro(id):
+    livro = Livro.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        # Atualiza os atributos do livro
+        livro.titulo = request.form['titulo']
+        livro.autor = request.form['autor']
+        livro.data_publicacao = request.form['data_publicacao']
+        livro.genero = request.form['genero']
+        livro.isbn = request.form['isbn']
+
+        try:
+            db.session.commit()  # Tenta salvar as alterações
+            flash('Livro atualizado com sucesso!')
+            return redirect(url_for('livros'))  # Redireciona para a lista de livros
+        except Exception as e:
+            db.session.rollback()  # Reverte as alterações em caso de erro
+            flash(f'Erro ao atualizar livro: {str(e)}')
+
+    return render_template('editar_livro.html', livro=livro)  # Retorna o template de edição
+
+@app.route('/deletar_livro/<int:id>', methods=['POST'])
+def deletar_livro(id):
+    livro = Livro.query.get_or_404(id)  # Obtém o livro pelo ID ou retorna 404 se não encontrado
+    try:
+        db.session.delete(livro)  # Remove o livro da sessão
+        db.session.commit()  # Confirma as mudanças
+        flash('Livro excluído com sucesso!')
+    except Exception as e:
+        db.session.rollback()  # Reverte as alterações em caso de erro
+        flash(f'Erro ao excluir livro: {str(e)}')
+
+    return redirect(url_for('livros'))  # Redireciona para a lista de livros
+
 
 @app.route('/configuracao')
 def configuracao():
