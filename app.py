@@ -145,20 +145,22 @@ def editar_livro(id):
     livro = Livro.query.get_or_404(id)
     
     if request.method == 'POST':
+        print(request.form)
         # Atualiza os atributos do livro
         livro.titulo = request.form['titulo']
         livro.autor = request.form['autor']
-        livro.data_publicacao = request.form['data_publicacao']
         livro.genero = request.form['genero']
         livro.isbn = request.form['isbn']
 
         try:
+            livro.data_publicacao = datetime.strptime(request.form['data_publicacao'], '%Y-%m-%d').date()
             db.session.commit()  # Tenta salvar as alterações
             flash('Livro atualizado com sucesso!')
             return redirect(url_for('livros'))  # Redireciona para a lista de livros
         except Exception as e:
             db.session.rollback()  # Reverte as alterações em caso de erro
             flash(f'Erro ao atualizar livro: {str(e)}')
+            print(f'Erro ao atualizar: {e}') 
 
     return render_template('editar_livro.html', livro=livro)  # Retorna o template de edição
 

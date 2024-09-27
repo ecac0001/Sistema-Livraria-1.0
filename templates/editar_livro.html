@@ -3,28 +3,35 @@
 {% block content %}
     <div class="container">
         <h1>Editar Livro</h1>
-        <form method="POST">
+
+        <form method="POST" action="{{ url_for('editar_livro', id=livro.id) }}">
             <div class="mb-3">
-                <label for="titulo" class="form-label">Título</label>
+                <label for="titulo" class="form-label">Título:</label>
                 <input type="text" class="form-control" id="titulo" name="titulo" value="{{ livro.titulo }}" required>
             </div>
+
             <div class="mb-3">
-                <label for="autor" class="form-label">Autor</label>
+                <label for="autor" class="form-label">Autor:</label>
                 <input type="text" class="form-control" id="autor" name="autor" value="{{ livro.autor }}" required>
             </div>
+
             <div class="mb-3">
-                <label for="data_publicacao" class="form-label">Data de Publicação</label>
+                <label for="data_publicacao" class="form-label">Data de Publicação:</label>
                 <input type="date" class="form-control" id="data_publicacao" name="data_publicacao" value="{{ livro.data_publicacao }}" required>
             </div>
+
             <div class="mb-3">
-                <label for="genero" class="form-label">Gênero</label>
+                <label for="genero" class="form-label">Gênero:</label>
                 <input type="text" class="form-control" id="genero" name="genero" value="{{ livro.genero }}" required>
             </div>
+
             <div class="mb-3">
-                <label for="isbn" class="form-label">ISBN</label>
+                <label for="isbn" class="form-label">ISBN:</label>
                 <input type="text" class="form-control" id="isbn" name="isbn" value="{{ livro.isbn }}" required>
             </div>
-            <button type="submit" class="btn btn-success">Salvar Alterações</button>
+
+            <button type="submit" class="btn btn-primary">Atualizar Livro</button>
+            <a href="{{ url_for('livros') }}" class="btn btn-secondary">Voltar</a> <!-- Botão opcional para voltar -->
         </form>
     </div>
 {% endblock %}
